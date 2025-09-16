@@ -1,12 +1,10 @@
 import math
-import django
 
 from math import sqrt
-from django import contrib
 
 component Label(props) {
   <template>
-    <span class="text-red bg-black" id="20">{{ props.count }}</span>
+    <span class="text-red bg-black" id="20">{{ sqrt(props.count) }}</span>
     <span>Click Me</span>
     <label>@slot()</label>
   </template>
@@ -14,7 +12,12 @@ component Label(props) {
 
 component Button() {
   <template>
-    <button>@slot()</button>
+    <button>
+      @Label({"count": 10}) { Fancy Button }
+      @Label({"x": 0, "y": {{ math.sqrt(4) }}}) {
+        @Label({"z": 8}) { Nested Fancy Button }
+      }
+    </button>
   </template>
 }
 
