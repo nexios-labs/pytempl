@@ -22,4 +22,4 @@ class Engine:
                 continue
             output.append(i)
 
-        return "\n".join(output)
+        return "\n".join(output).strip()

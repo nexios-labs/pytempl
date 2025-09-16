@@ -5,30 +5,17 @@ from lark import Token, Tree
 
 
 class Transformer(lark.Transformer):
-    def import_stmt(self, children: List[Token | Tree[Token]]):
-        for stmt in children:
-            if stmt.data == "simple_import":
-                for _simple_import in stmt.children:
-                    for module_list in _simple_import.children:
-                        for module in module_list.children:
-                            return f"import {module.value}"
-            elif stmt.data == "from_import":
-                module = (
-                    list(
-                        list(stmt.find_data("module_name"))[0].find_pred(
-                            lambda v: isinstance(v, Tree)
-                        )
-                    )[0]
-                    .children[0]
-                    .value
-                )
-                targets = list(
-                    list(
-                        list(stmt.find_data("import_list"))[0].find_data("import_item")
-                    )[0].find_data("import_item")
-                )[0].children[0]
+    def simple_import(self, children: List[Token | Tree[Token]]):
+        return f"import {children[0].children[0].children[0]}"
 
-                return f"from {module} import {targets}"
+    def from_import(self, children: List[Token | Tree[Token]]):
+        module_name = list(children[0].find_data("module_name"))[0].children[0]
+        import_list = list(children[1].find_data("import_list"))[0].children[0].children
+
+        return f"from {module_name} import {','.join(import_list)}"
+
+    def import_stmt(self, children: List[Token | Tree[Token]]):
+        return children[0]
 
     def attribute(self, children: List[Token | Tree[Token]]):
         attr_name = children[0]
