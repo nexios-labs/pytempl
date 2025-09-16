@@ -5,11 +5,11 @@ import lark
 from lark import Token, Tree
 
 function_template = Template(
-    '''
+    """
 def $name($params):
-$python_code
-    return f"""$markup"""
-'''
+    $python_code
+    return ( $markup )
+"""
 )
 
 
@@ -27,13 +27,14 @@ class Transformer(lark.Transformer):
         return children[0]
 
     def interpolation(self, children: List[Token | Tree[Token]]):
-        return "{" + children[0].children[0].strip() + "}"
+        return f"str({children[0].children[0].strip()})"
 
     def body_text(self, children: List[Token | Tree[Token]]):
         return self.text_content(children)
 
     def text_content(self, children: List[Token | Tree[Token]]):
-        return children[0].value
+        text = children[0].value.strip()
+        return f"'{text}'"
 
     def attribute(self, children: List[Token | Tree[Token]]):
         attr_name = children[0]
@@ -45,24 +46,26 @@ class Transformer(lark.Transformer):
         output = []
         tag_name = children[0].children[0]
 
-        output.append(f"<{tag_name}")
+        opening_tag = []
+        opening_tag.append(f"'<{tag_name}")
 
         attributes = list(filter(lambda v: v.data == "attributes", children))
         if len(attributes) > 0:
             attributes: Token | Tree[Token] = attributes[0]
 
-            output.append(" " + " ".join(attributes.children))
+            opening_tag.append(" " + " ".join(attributes.children))
 
-        output.append(f">")
+        opening_tag.append(f">'")
+        output.append("".join(opening_tag).strip())
 
         element_content = list(filter(lambda v: v.data == "element_content", children))
         for content in element_content[0].children:
-            content = content.children[0]
+            content = content.children[0].strip()
             output.append(content)
 
-        output.append(f"</{tag_name}>")
+        output.append(f"'</{tag_name}>'")
 
-        return output
+        return "+".join(output)
 
     def dict_literal(self, children: List[Token | Tree[Token]]):
         items = children[0].children
@@ -106,13 +109,11 @@ class Transformer(lark.Transformer):
 
         # Handle body call (slot content) - pass as last argument
         if len(children) > 2:  # Has component_body_call
-            slot_content = children[2]  # The body content
-            component_args.append(
-                f'lambda: f"{slot_content.strip()}"'
-            )  # Pass as string to slot
+            slot_content = children[2].strip()  # The body content
+            component_args.append(f"lambda: {slot_content}")  # Pass as string to slot
 
         args_str = ", ".join(component_args)
-        return "{" + f"{component_name}({args_str})" + "}"
+        return f"{component_name}({args_str})"
 
     def component_def(self, children: List[Token | Tree[Token]]):
         output = ""
@@ -148,12 +149,14 @@ class Transformer(lark.Transformer):
             targets = element.children[0]
             if isinstance(targets, list):
                 markup.extend(targets)
+            elif isinstance(targets, str):
+                markup.append(targets)
 
         output += function_template.substitute(
             name=component_name,
             params=", ".join(params_name),
             python_code="\n".join(f"    {line}" for line in python),
-            markup="".join([*markup, *javascript]),
+            markup=("+".join([*markup, *javascript])).strip(),
         )
 
         return output
