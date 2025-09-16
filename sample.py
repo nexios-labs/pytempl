@@ -1,11 +1,9 @@
 import math
-import django
 from math import sqrt
-from django import contrib
 
 def Label(props, slot):
 
-    return f"""<span class="text-red bg-black" id="20">{props.count}</span><span>Click Me</span><label>{slot()}</label>"""
+    return f"""<span class="text-red bg-black" id="20">{sqrt(props.count)}</span><span>Click Me</span><label>{slot()}</label>"""
 
 
 def Button():
