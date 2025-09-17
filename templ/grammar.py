@@ -29,7 +29,8 @@ component_element: script_block | template_block
 // Script blocks
 script_block: "<script" script_attrs? ">" script_content "</script>"
 script_attrs: script_attr+
-script_attr: CNAME "=" STRING
+script_attr: CNAME ("=" script_value)?
+script_value: STRING | CNAME
 script_content: /.+?(?=<\/script>)/s
 
 // Template blocks
@@ -43,7 +44,7 @@ html_element: "<" tag_name attributes? ">" element_content "</" tag_name ">" | "
 tag_name: CNAME
 attributes: attribute+
 attribute: CNAME ("=" attribute_value)?
-attribute_value: STRING | CNAME
+attribute_value: interpolation | STRING | CNAME
 element_content: template_element*
 
 // Component calls
@@ -57,7 +58,7 @@ body_content: body_element*
 body_element: component_call | html_element | interpolation | body_text
 
 // Python literals
-dict_literal: "{" dict_items? "}"
+dict_literal: "{" dict_items* "}"
 dict_items: dict_item ("," dict_item)*
 dict_item: (STRING | CNAME) ":" (STRING | NUMBER | CNAME | interpolation)
 

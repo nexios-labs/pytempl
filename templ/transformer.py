@@ -27,7 +27,7 @@ class Transformer(lark.Transformer):
         return children[0]
 
     def interpolation(self, children: List[Token | Tree[Token]]):
-        return f"str({children[0].children[0].strip()})"
+        return f"{children[0].children[0].strip()}"
 
     def body_text(self, children: List[Token | Tree[Token]]):
         return self.text_content(children)
@@ -67,7 +67,41 @@ class Transformer(lark.Transformer):
 
         return "+".join(output)
 
+    def script_attrs(self, children: List[Token | Tree[Token]]):
+        attr_name = children[0].children[0].value
+        attr_value = list(children[0].children[1].find_data("script_value"))[
+            0
+        ].children[0]
+
+        return f"{attr_name}={attr_value}"
+
+    def script_block(self, children: List[Token | Tree[Token]]):
+        script_type = children[0].split("=")[1].strip('"')
+
+        if script_type == "text/javascript":
+            javascript = ["'" + '<script type="text/javascript">' + "'"]
+
+            for inner in (
+                list(children[1].find_data("script_content"))[0]
+                .children[0]
+                .value.strip()
+                .split("\n")
+            ):
+                javascript.append(
+                    "'" + inner.strip() + "'",
+                )
+            javascript.append("'</script>'")
+
+            return "+".join(javascript)
+        elif script_type == "text/python":
+            return ""
+
+        return children
+
     def dict_literal(self, children: List[Token | Tree[Token]]):
+        if len(children) == 0:
+            return "{}"
+
         items = children[0].children
 
         return "{" + ", ".join(items) + "}"
@@ -139,6 +173,13 @@ class Transformer(lark.Transformer):
         component_body = list(filter(lambda v: v.data == "component_body", children))
         if len(component_body) > 0:
             component_body: Token | Tree[Token] = component_body[0]
+
+        for script in list(component_body.find_data("component_element"))[0].children:
+            if (
+                isinstance(script, str)
+                and script.find('<script type="text/javascript">') > 0
+            ):
+                javascript.append(script)
 
         has_slot = component_body.pretty("").find("slot") >= 0
         if has_slot:
