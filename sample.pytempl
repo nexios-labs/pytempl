@@ -19,6 +19,10 @@ component Button(props) {
       @Label({"x": 0, "y": {{ math.sqrt(4) }}}) {
         @Label({"z": 8}) { Nested Fancy Button }
       }
+      <img src="logo.png" alt="Logo"/>
+      <br/>
+      <div></div>
+      <input type="text"/>
     </button>
   </template>
 }

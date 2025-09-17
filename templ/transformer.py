@@ -46,20 +46,29 @@ class Transformer(lark.Transformer):
         output = []
         tag_name = children[0].children[0]
 
+        # Collect attributes if present
+        attributes_nodes = list(filter(lambda v: v.data == "attributes", children))
+        has_attributes = len(attributes_nodes) > 0
+        if has_attributes:
+            attributes: Token | Tree[Token] = attributes_nodes[0]
+            attrs_str = " " + " ".join(attributes.children)
+        else:
+            attrs_str = ""
+
+        element_content_nodes = list(filter(lambda v: v.data == "element_content", children))
+        is_self_closing = len(element_content_nodes) == 0
+
+        if is_self_closing:
+            return f"'<{tag_name}{attrs_str}/>'"
+
         opening_tag = []
         opening_tag.append(f"'<{tag_name}")
-
-        attributes = list(filter(lambda v: v.data == "attributes", children))
-        if len(attributes) > 0:
-            attributes: Token | Tree[Token] = attributes[0]
-
-            opening_tag.append(" " + " ".join(attributes.children))
-
-        opening_tag.append(f">'")
+        if has_attributes:
+            opening_tag.append(attrs_str)
+        opening_tag.append("'>")
         output.append("".join(opening_tag).strip())
 
-        element_content = list(filter(lambda v: v.data == "element_content", children))
-        for content in element_content[0].children:
+        for content in element_content_nodes[0].children:
             content = content.children[0].strip()
             output.append(content)
 
