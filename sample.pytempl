@@ -21,6 +21,7 @@ component Button(props) {
       }
       <img src="logo.png" alt="Logo"/>
       <br/>
+      <div></div>
       <input type="text"/>
     </button>
   </template>
