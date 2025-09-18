@@ -44,7 +44,7 @@ html_element: "<" tag_name attributes? ">" element_content "</" tag_name ">" | "
 tag_name: CNAME
 attributes: attribute+
 attribute: CNAME ("=" attribute_value)?
-attribute_value: interpolation | STRING | CNAME
+attribute_value: quoted_interpolation | INTERPOLATION_BLOCK | STRING | CNAME
 element_content: template_element*
 
 // Component calls
@@ -55,7 +55,7 @@ component_body_call: "{" body_content "}"
 
 // Body content for component calls
 body_content: body_element*
-body_element: component_call | html_element | interpolation | body_text
+body_element: if_statement | component_call | html_element | interpolation | body_text
 
 // Python literals
 dict_literal: "{" dict_items* "}"
@@ -66,11 +66,23 @@ list_literal: "[" list_items? "]"
 list_items: list_item ("," list_item)*
 list_item: STRING | NUMBER | CNAME | interpolation
 
-// Interpolation expressions
-interpolation: "{{" python_expr "}}"
+// If statements
+if_statement: if_clause elif_clause* else_clause?
+if_clause: "if" PYTHON_CONDITION ":" template_element*
+elif_clause: "elif" PYTHON_CONDITION ":" template_element*
+else_clause: "else" ":" template_element*
+
+// Interpolation expressions - using terminal for complete block
+interpolation: INTERPOLATION_BLOCK
+quoted_interpolation: QUOTED_INTERPOLATION
 python_expr: /[^}]+/
 
-// Text content
-text_content: /[^<@{]+/
-body_text: /[^<@{}]+/
+// Text content - exclude keywords
+text_content: /(?!if\s|elif\s|else\s)[^<@{]+/
+body_text: /(?!if\s|elif\s|else\s)[^<@{}]+/
+
+// Terminals - with high priority
+PYTHON_CONDITION.8: /[^:]+/
+QUOTED_INTERPOLATION.10: /"\{\{[^}]*\}\}"/
+INTERPOLATION_BLOCK.9: /\{\{[^}]*\}\}/
 """

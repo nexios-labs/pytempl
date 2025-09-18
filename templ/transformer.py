@@ -27,7 +27,20 @@ class Transformer(lark.Transformer):
         return children[0]
 
     def interpolation(self, children: List[Token | Tree[Token]]):
-        return f"{children[0].children[0].strip()}"
+        # For INTERPOLATION_BLOCK terminal: {{ expression }}
+        content = children[0].value  # Get the full {{ ... }} content
+        # Remove the {{ and }} and extract the Python expression
+        python_expr = content[2:-2].strip()
+
+        return python_expr
+
+    def quoted_interpolation(self, children: List[Token | Tree[Token]]):
+        # For QUOTED_INTERPOLATION terminal: "{{ expression }}"
+        content = children[0].value  # Get the full "{{ ... }}" content
+        # Remove the quotes and {{ }} and extract the Python expression
+        python_expr = content[3:-3].strip()  # Remove "{{ and }}"
+
+        return "' +" + python_expr + "+'"
 
     def body_text(self, children: List[Token | Tree[Token]]):
         return self.text_content(children)
@@ -49,13 +62,14 @@ class Transformer(lark.Transformer):
         # Collect attributes if present
         attributes_nodes = list(filter(lambda v: v.data == "attributes", children))
         has_attributes = len(attributes_nodes) > 0
+        attrs_str = ""
         if has_attributes:
             attributes: Token | Tree[Token] = attributes_nodes[0]
             attrs_str = " " + " ".join(attributes.children)
-        else:
-            attrs_str = ""
 
-        element_content_nodes = list(filter(lambda v: v.data == "element_content", children))
+        element_content_nodes = list(
+            filter(lambda v: v.data == "element_content", children)
+        )
         is_self_closing = len(element_content_nodes) == 0
 
         if is_self_closing:
@@ -65,12 +79,13 @@ class Transformer(lark.Transformer):
         opening_tag.append(f"'<{tag_name}")
         if has_attributes:
             opening_tag.append(attrs_str)
-        opening_tag.append("'>")
+        opening_tag.append(" >'")
         output.append("".join(opening_tag).strip())
 
         for content in element_content_nodes[0].children:
-            content = content.children[0].strip()
-            output.append(content)
+            content = content.children[0]
+            if isinstance(content, str):
+                output.append(content)
 
         output.append(f"'</{tag_name}>'")
 
