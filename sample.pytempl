@@ -12,7 +12,7 @@ component Label(props) {
 
 component Button(props) {
   <template>
-    <button onclick="do_something()">
+    <button onclick="{{ props.get("onclick", "") }}">
       @Label({"count": 10}) { Fancy Button }
     </button>
     <button>
@@ -51,8 +51,8 @@ component Counter() {
         <span>count is an even number</span>
       else:
         <span>count is an odd number</span>
-      @Button({"onclick": "do_something"}) { Decrease }
-      @Button({}) { Increase }
+      @Button({"onclick": "do_something()"})
+      @Button({})
     </div>
   </template>
 }
