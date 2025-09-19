@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "lark>=1.2.2",
+    "ruff-api>=0.1.0",
 ]
 
 [dependency-groups]

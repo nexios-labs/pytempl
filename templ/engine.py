@@ -1,3 +1,4 @@
+import ruff_api
 from lark import Lark, Token, Tree
 
 from templ.grammar import grammar
@@ -8,7 +9,7 @@ class Engine:
     def __init__(self):
         pass
 
-    def render(self, template_path: str, save: bool = True) -> str:
+    def render(self, template_path: str, save: bool = True, format: bool = True) -> str:
         with open(template_path, "r") as template_file:
             content = template_file.read()
 
@@ -23,9 +24,13 @@ class Engine:
             output.append(i)
 
         output = "\n".join(output).strip()
+        if format:
+            output = ruff_api.format_string("", output)
+
         if save:
             file_name = template_path.replace(template_path.split(".")[-1], "py")
             self.save(file_name, output)
+
             return
         return output
 

@@ -35,7 +35,7 @@ component Counter() {
   </script>
 
   <script type="text/python">
-    count = 0
+    count = 2
     def increase():
       count += 1
 
@@ -45,12 +45,21 @@ component Counter() {
 
   <template>
     <div>
-      if count == 0:
+      <span>count is 0</span>
+      if count == 0 {
         <span>count is 0</span>
-      elif count % 2:
+        @Label({}) { From }
+        Hello
+        @Label({}) { To }
+        Hello
+      } elif count == 2 {
         <span>count is an even number</span>
-      else:
+        World
+        @Label({}) { World }
+      } else {
         <span>count is an odd number</span>
+        !
+      }
       @Button({"onclick": "do_something()"})
       @Button({})
     </div>
