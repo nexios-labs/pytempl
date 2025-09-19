@@ -309,6 +309,8 @@ def Demo():
 def App():
     return (
         ""
+        + "<!DOCTYPE  html>"
+        + ""
         + "<html >"
         + ""
         + "<head >"
@@ -316,6 +318,28 @@ def App():
         + "<title >"
         + "Template Engine Demo"
         + "</title>"
+        + ""
+        + """<style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .demo-container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .section { margin: 30px 0; padding: 20px; border-left: 4px solid #007acc; }
+        .demo-button { background: #007acc; color: white; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 4px; }
+        .demo-button:hover { background: #005a9e; }
+        .text-red { color: red; }
+        .bg-black { background: black; color: white; padding: 2px 6px; border-radius: 3px; }
+        .color-item { margin: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .todo-item { margin: 5px 0; padding: 8px; }
+        .completed { text-decoration: line-through; color: #888; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        .success { color: green; }
+        .button-group { margin: 10px 0; }
+        .color-red { background: #ffebee; }
+        .color-green { background: #e8f5e8; }
+        .color-blue { background: #e3f2fd; }
+        .color-purple { background: #f3e5f5; }
+        .color-orange { background: #fff3e0; }
+      </style>"""
         + "</head>"
         + ""
         + "<body >"

@@ -24,7 +24,7 @@ component_name: CNAME
 params: CNAME ("," CNAME)*
 component_body: component_element*
 
-component_element: script_block | template_block
+component_element: script_block | style_block | template_block
 
 // Script blocks
 script_block: "<script" script_attrs? ">" script_content "</script>"
@@ -33,11 +33,20 @@ script_attr: CNAME ("=" script_value)?
 script_value: STRING | CNAME
 script_content: /.+?(?=<\/script>)/s
 
+// Style
+style_block: "<style" style_attrs? ">" style_content "</style>"
+style_attrs: style_attr+
+style_attr: CNAME ("=" style_value)?
+style_value: STRING | CNAME
+style_content: /.+?(?=<\/style>)/s
+
 // Template blocks
 template_block: "<template>" template_content "</template>"
 template_content: template_element*
 
-template_element: control_flow | component_call | html_element | interpolation | text_content
+doctype: "<!DOCTYPE" /[^>]+/ ">"
+
+template_element: control_flow | component_call | doctype | style_block | html_element | interpolation | text_content
 
 // HTML elements
 html_element: "<" tag_name attributes? ">" element_content "</" tag_name ">" | "<" tag_name attributes? "/>"
