@@ -83,7 +83,7 @@ def Counter():
                 + "World"
                 + Label({}, lambda: "World")
                 if count == 2
-                else ("")
+                else ("" + "<span >" + "count is an odd number" + "</span>" + "!")
             )
         )
         + ""

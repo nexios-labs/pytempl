@@ -78,7 +78,7 @@ class Transformer(lark.Transformer):
 
     def else_clause(self, children: List[Token | Tree[Token]]):
         # else clause has no condition, all children are template elements
-        block_content = "+".join(children[0].children)
+        block_content = "+".join(list(map(lambda v: "+".join(v.children), children)))
         return {"type": "else", "content": block_content}
 
     def if_statement(self, children: List[Token | Tree[Token]]):
