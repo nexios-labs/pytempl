@@ -74,7 +74,7 @@ if_clause: "if" PYTHON_CONDITION "{" body_element* "}"
 elif_clause: "elif" PYTHON_CONDITION "{" body_element* "}"
 else_clause: "else" "{" body_element* "}"
 
-for_loop: "for" CNAME "in" CNAME "{" body_element* "}"
+for_loop: "for" CNAME "in" text_content "{" body_element* "}"
 
 // Interpolation expressions - using terminal for complete block
 interpolation: INTERPOLATION_BLOCK
