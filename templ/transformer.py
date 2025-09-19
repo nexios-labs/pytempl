@@ -1,10 +1,8 @@
 from dataclasses import dataclass
 from string import Template
 from typing import List
-from unittest import result
 
 import lark
-import lark.indenter
 from lark import Token, Tree
 
 function_template = Template(
@@ -20,15 +18,6 @@ def $name($params):
 class Script:
     type: str
     content: str
-
-
-class Indenter(lark.indenter.Indenter):
-    NL_type = "NEWLINE"
-    OPEN_PAREN_types = ["LPAR", "LSQB", "LBRACE"]
-    CLOSE_PAREN_types = ["RPAR", "RSQB", "RBRACE"]
-    INDENT_type = "INDENT"
-    DEDENT_type = "DEDENT"
-    tab_len = 2
 
 
 class Transformer(lark.Transformer):
