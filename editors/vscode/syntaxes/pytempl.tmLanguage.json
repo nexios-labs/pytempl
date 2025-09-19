@@ -1,0 +1,635 @@
+{
+  "name": "PyTemplate Engine",
+  "scopeName": "source.pytempl",
+  "fileTypes": ["pytempl"],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#imports"
+    },
+    {
+      "include": "#component-definition"
+    },
+    {
+      "include": "#script-blocks"
+    },
+    {
+      "include": "#style-blocks"
+    },
+    {
+      "include": "#template-blocks"
+    },
+    {
+      "include": "#control-flow"
+    },
+    {
+      "include": "#component-calls"
+    },
+    {
+      "include": "#html-elements"
+    },
+    {
+      "include": "#interpolation"
+    },
+    {
+      "include": "#doctype"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.pytempl",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "imports": {
+      "patterns": [
+        {
+          "name": "meta.import.pytempl",
+          "begin": "\\b(import|from)\\b",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.import.pytempl"
+            }
+          },
+          "end": "$",
+          "patterns": [
+            {
+              "name": "entity.name.namespace.pytempl",
+              "match": "\\b[a-zA-Z_][a-zA-Z0-9_.]*\\b"
+            },
+            {
+              "name": "punctuation.separator.pytempl",
+              "match": "[,.]"
+            }
+          ]
+        }
+      ]
+    },
+    "component-definition": {
+      "patterns": [
+        {
+          "name": "meta.component.definition.pytempl",
+          "begin": "\\b(component)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*(\\()",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.component.pytempl"
+            },
+            "2": {
+              "name": "entity.name.function.component.pytempl"
+            },
+            "3": {
+              "name": "punctuation.definition.parameters.begin.pytempl"
+            }
+          },
+          "end": "\\)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.parameters.end.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "name": "variable.parameter.pytempl",
+              "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+            },
+            {
+              "name": "punctuation.separator.parameter.pytempl",
+              "match": ","
+            }
+          ]
+        }
+      ]
+    },
+    "script-blocks": {
+      "patterns": [
+        {
+          "name": "meta.script.python.pytempl",
+          "begin": "(<script)([^>]*type\\s*=\\s*[\"']text/python[\"'][^>]*)(>)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.begin.pytempl"
+            },
+            "2": {
+              "patterns": [
+                {
+                  "include": "#tag-attributes"
+                }
+              ]
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.pytempl"
+            }
+          },
+          "end": "(</script>)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.pytempl"
+            }
+          },
+          "contentName": "source.python",
+          "patterns": [
+            {
+              "include": "source.python"
+            }
+          ]
+        },
+        {
+          "name": "meta.script.javascript.pytempl",
+          "begin": "(<script)([^>]*type\\s*=\\s*[\"']text/javascript[\"'][^>]*|(?![^>]*type\\s*=\\s*[\"']text/python[\"'])[^>]*)(>)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.begin.pytempl"
+            },
+            "2": {
+              "patterns": [
+                {
+                  "include": "#tag-attributes"
+                }
+              ]
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.pytempl"
+            }
+          },
+          "end": "(</script>)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.pytempl"
+            }
+          },
+          "contentName": "source.js",
+          "patterns": [
+            {
+              "include": "source.js"
+            }
+          ]
+        }
+      ]
+    },
+    "style-blocks": {
+      "patterns": [
+        {
+          "name": "meta.style.pytempl",
+          "begin": "(<style)([^>]*)(>)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.begin.pytempl"
+            },
+            "2": {
+              "patterns": [
+                {
+                  "include": "#tag-attributes"
+                }
+              ]
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.pytempl"
+            }
+          },
+          "end": "(</style>)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#interpolation"
+            },
+            {
+              "include": "source.css"
+            }
+          ]
+        }
+      ]
+    },
+    "template-blocks": {
+      "patterns": [
+        {
+          "name": "meta.template.pytempl",
+          "begin": "(<template>)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.pytempl"
+            }
+          },
+          "end": "(</template>)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#template-content"
+            }
+          ]
+        }
+      ]
+    },
+    "template-content": {
+      "patterns": [
+        {
+          "include": "#script-blocks"
+        },
+        {
+          "include": "#control-flow"
+        },
+        {
+          "include": "#component-calls"
+        },
+        {
+          "include": "#html-elements"
+        },
+        {
+          "include": "#interpolation"
+        },
+        {
+          "include": "#doctype"
+        },
+        {
+          "include": "#style-blocks"
+        }
+      ]
+    },
+    "control-flow": {
+      "patterns": [
+        {
+          "name": "meta.control-flow.if.pytempl",
+          "begin": "\\b(if|elif)\\s+([^{]+)\\s*(\\{)",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.conditional.pytempl"
+            },
+            "2": {
+              "name": "source.python.embedded.condition.pytempl",
+              "patterns": [
+                {
+                  "include": "source.python"
+                }
+              ]
+            },
+            "3": {
+              "name": "punctuation.section.block.begin.pytempl"
+            }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.block.end.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#template-content"
+            }
+          ]
+        },
+        {
+          "name": "meta.control-flow.else.pytempl",
+          "begin": "\\b(else)\\s*(\\{)",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.conditional.pytempl"
+            },
+            "2": {
+              "name": "punctuation.section.block.begin.pytempl"
+            }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.block.end.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#template-content"
+            }
+          ]
+        },
+        {
+          "name": "meta.control-flow.for.pytempl",
+          "begin": "\\b(for)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s+(in)\\s+([^{]+)\\s*(\\{)",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.loop.pytempl"
+            },
+            "2": {
+              "name": "variable.other.iterator.pytempl"
+            },
+            "3": {
+              "name": "keyword.control.loop.pytempl"
+            },
+            "4": {
+              "name": "source.python.embedded.iterable.pytempl",
+              "patterns": [
+                {
+                  "include": "source.python"
+                }
+              ]
+            },
+            "5": {
+              "name": "punctuation.section.block.begin.pytempl"
+            }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.block.end.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#template-content"
+            }
+          ]
+        }
+      ]
+    },
+    "component-calls": {
+      "patterns": [
+        {
+          "name": "meta.component.call.pytempl",
+          "begin": "(@)([a-zA-Z_][a-zA-Z0-9_]*)(\\()",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.component.pytempl"
+            },
+            "2": {
+              "name": "entity.name.function.component.pytempl"
+            },
+            "3": {
+              "name": "punctuation.definition.arguments.begin.pytempl"
+            }
+          },
+          "end": "\\)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.arguments.end.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#component-arguments"
+            }
+          ]
+        },
+        {
+          "name": "meta.component.body.pytempl",
+          "begin": "\\{",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.section.component-body.begin.pytempl"
+            }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.component-body.end.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#script-blocks"
+            },
+            {
+              "include": "#template-content"
+            }
+          ]
+        }
+      ]
+    },
+    "component-arguments": {
+      "patterns": [
+        {
+          "include": "#interpolation"
+        },
+        {
+          "include": "#python-literals"
+        },
+        {
+          "name": "string.quoted.double.pytempl",
+          "match": "\"[^\"]*\""
+        },
+        {
+          "name": "string.quoted.single.pytempl",
+          "match": "'[^']*'"
+        },
+        {
+          "name": "constant.numeric.pytempl",
+          "match": "\\b\\d+(\\.\\d+)?\\b"
+        }
+      ]
+    },
+    "python-literals": {
+      "patterns": [
+        {
+          "name": "meta.structure.dictionary.pytempl",
+          "begin": "\\{",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.dictionary.begin.pytempl"
+            }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.dictionary.end.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#interpolation"
+            },
+            {
+              "name": "string.quoted.pytempl",
+              "match": "[\"'][^\"']*[\"']"
+            },
+            {
+              "name": "punctuation.separator.dictionary.pytempl",
+              "match": "[,:.]"
+            }
+          ]
+        },
+        {
+          "name": "meta.structure.list.pytempl",
+          "begin": "\\[",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.list.begin.pytempl"
+            }
+          },
+          "end": "\\]",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.list.end.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#interpolation"
+            },
+            {
+              "name": "string.quoted.pytempl",
+              "match": "[\"'][^\"']*[\"']"
+            },
+            {
+              "name": "punctuation.separator.list.pytempl",
+              "match": ","
+            }
+          ]
+        }
+      ]
+    },
+    "html-elements": {
+      "patterns": [
+        {
+          "name": "meta.tag.pytempl",
+          "begin": "(<)([a-zA-Z_][a-zA-Z0-9_-]*)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.begin.pytempl"
+            },
+            "2": {
+              "name": "entity.name.tag.pytempl"
+            }
+          },
+          "end": "(/>)|(>)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.end.pytempl"
+            },
+            "2": {
+              "name": "punctuation.definition.tag.end.pytempl"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#tag-attributes"
+            }
+          ]
+        },
+        {
+          "name": "meta.tag.closing.pytempl",
+          "match": "(</)([a-zA-Z_][a-zA-Z0-9_-]*)(>)",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.tag.begin.pytempl"
+            },
+            "2": {
+              "name": "entity.name.tag.pytempl"
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.pytempl"
+            }
+          }
+        }
+      ]
+    },
+    "tag-attributes": {
+      "patterns": [
+        {
+          "name": "meta.attribute.pytempl",
+          "match": "\\b([a-zA-Z_][a-zA-Z0-9_-]*)\\s*(=)\\s*([^\\s>]+)",
+          "captures": {
+            "1": {
+              "name": "entity.other.attribute-name.pytempl"
+            },
+            "2": {
+              "name": "punctuation.separator.key-value.pytempl"
+            },
+            "3": {
+              "patterns": [
+                {
+                  "include": "#interpolation"
+                },
+                {
+                  "name": "string.quoted.double.pytempl",
+                  "match": "\"[^\"]*\""
+                },
+                {
+                  "name": "string.quoted.single.pytempl",
+                  "match": "'[^']*'"
+                },
+                {
+                  "name": "string.unquoted.pytempl",
+                  "match": "[^\\s>]+"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "entity.other.attribute-name.pytempl",
+          "match": "\\b[a-zA-Z_][a-zA-Z0-9_-]*\\b"
+        }
+      ]
+    },
+    "interpolation": {
+      "patterns": [
+        {
+          "name": "meta.interpolation.pytempl",
+          "begin": "\\{\\{",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.interpolation.begin.pytempl"
+            }
+          },
+          "end": "\\}\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.interpolation.end.pytempl"
+            }
+          },
+          "contentName": "source.python.embedded.pytempl",
+          "patterns": [
+            {
+              "include": "source.python"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.interpolated.pytempl",
+          "match": "\"\\{\\{[^}]*\\}\\}\"",
+          "captures": {
+            "0": {
+              "patterns": [
+                {
+                  "include": "#interpolation"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "doctype": {
+      "patterns": [
+        {
+          "name": "meta.tag.sgml.doctype.pytempl",
+          "match": "(<!)([Dd][Oo][Cc][Tt][Yy][Pp][Ee])\\s+([^>]+)(>)",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.tag.begin.pytempl"
+            },
+            "2": {
+              "name": "entity.name.tag.doctype.pytempl"
+            },
+            "3": {
+              "name": "string.unquoted.doctype.pytempl"
+            },
+            "4": {
+              "name": "punctuation.definition.tag.end.pytempl"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
