@@ -97,6 +97,14 @@ class Transformer(lark.Transformer):
 
         return result
 
+    def for_loop(self, children: List[Token | Tree[Token]]):
+        item = children[0]
+        items = children[1]
+        body = "+".join(["+".join(child.children) for child in children[2:]])
+        result = f"''.join([{body} for {item} in {items}])"
+
+        return result
+
     def control_flow(self, children: List[Token | Tree[Token]]):
         return "".join(children)
 

@@ -49,6 +49,8 @@ def Button(props):
 
 
 def Counter():
+    colors = ["red", "green", "blue"]
+
     count = 2
 
     def increase():
@@ -89,7 +91,13 @@ def Counter():
         + ""
         + Button({"onclick": "do_something()"})
         + ""
-        + Button({})
+        + "<br/>"
+        + "".join(
+            [
+                "" + " + " + "" + Label({}, lambda: color) + "" + "<br/>"
+                for color in colors
+            ]
+        )
         + "</div>"
         + '<script type="text/javascript">'
         + "function do_something() {"
