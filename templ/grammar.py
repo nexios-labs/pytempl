@@ -66,13 +66,15 @@ list_literal: "[" list_items? "]"
 list_items: list_item ("," list_item)*
 list_item: STRING | NUMBER | CNAME | interpolation
 
-control_flow: if_statement
+control_flow: if_statement | for_loop
 
 // If statements
 if_statement: if_clause elif_clause* else_clause?
 if_clause: "if" PYTHON_CONDITION "{" body_element* "}"
 elif_clause: "elif" PYTHON_CONDITION "{" body_element* "}"
 else_clause: "else" "{" body_element* "}"
+
+for_loop: "for" CNAME "in" CNAME "{" body_element* "}"
 
 // Interpolation expressions - using terminal for complete block
 interpolation: INTERPOLATION_BLOCK

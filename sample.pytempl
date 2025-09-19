@@ -35,6 +35,8 @@ component Counter() {
   </script>
 
   <script type="text/python">
+    colors = ["red", "green", "blue"]
+
     count = 2
     def increase():
       count += 1
@@ -61,7 +63,12 @@ component Counter() {
         !
       }
       @Button({"onclick": "do_something()"})
-      @Button({})
+      <br />
+      for color in colors {
+        {{ " + " }}
+        @Label({}) { {{ color }} }
+        <br />
+      }
     </div>
   </template>
 }
