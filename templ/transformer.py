@@ -1,7 +1,10 @@
+from dataclasses import dataclass
 from string import Template
 from typing import List
+from unittest import result
 
 import lark
+import lark.indenter
 from lark import Token, Tree
 
 function_template = Template(
@@ -11,6 +14,21 @@ def $name($params):
     return ( $markup )
 """
 )
+
+
+@dataclass
+class Script:
+    type: str
+    content: str
+
+
+class Indenter(lark.indenter.Indenter):
+    NL_type = "NEWLINE"
+    OPEN_PAREN_types = ["LPAR", "LSQB", "LBRACE"]
+    CLOSE_PAREN_types = ["RPAR", "RSQB", "RBRACE"]
+    INDENT_type = "INDENT"
+    DEDENT_type = "DEDENT"
+    tab_len = 2
 
 
 class Transformer(lark.Transformer):
@@ -41,6 +59,46 @@ class Transformer(lark.Transformer):
         python_expr = content[3:-3].strip()  # Remove "{{ and }}"
 
         return "' +" + python_expr + "+'"
+
+    def if_clause(self, children: List[Token | Tree[Token]]):
+        condition = children[0].value.strip()  # PYTHON_CONDITION terminal
+
+        block_content = "+".join(
+            list(map(lambda v: "+".join(v.children), children[1:]))
+        )
+        return {"type": "if", "condition": condition, "content": block_content}
+
+    def elif_clause(self, children: List[Token | Tree[Token]]):
+        condition = children[0].value.strip()  # PYTHON_CONDITION terminal
+        # block_content = "+".join(children[1:][0].children)
+        block_content = "+".join(
+            list(map(lambda v: "+".join(v.children), children[1:]))
+        )
+        return {"type": "elif", "condition": condition, "content": block_content}
+
+    def else_clause(self, children: List[Token | Tree[Token]]):
+        # else clause has no condition, all children are template elements
+        block_content = "+".join(children[0].children)
+        return {"type": "else", "content": block_content}
+
+    def if_statement(self, children: List[Token | Tree[Token]]):
+        # children contains: [if_clause, elif_clause*, else_clause?]
+        clauses = children
+
+        # Build the nested conditional expression from right to left
+        result = "''"  # Default empty string if no conditions match
+
+        # Process clauses in reverse order to build proper nesting
+        for clause in reversed(clauses):
+            if clause["type"] == "else":
+                result = f"({clause['content']})"
+            elif clause["type"] in ["if", "elif"]:
+                result = f"({clause['content']} if {clause['condition']} else {result})"
+
+        return result
+
+    def control_flow(self, children: List[Token | Tree[Token]]):
+        return "".join(children)
 
     def body_text(self, children: List[Token | Tree[Token]]):
         return self.text_content(children)
@@ -83,7 +141,6 @@ class Transformer(lark.Transformer):
         output.append("".join(opening_tag).strip())
 
         for content in element_content_nodes[0].children:
-            content = content.children[0]
             if isinstance(content, str):
                 output.append(content)
 
@@ -100,10 +157,11 @@ class Transformer(lark.Transformer):
         return f"{attr_name}={attr_value}"
 
     def script_block(self, children: List[Token | Tree[Token]]):
+        script = []
         script_type = children[0].split("=")[1].strip('"')
 
         if script_type == "text/javascript":
-            javascript = ["'" + '<script type="text/javascript">' + "'"]
+            script.append("'" + '<script type="text/javascript">' + "'")
 
             for inner in (
                 list(children[1].find_data("script_content"))[0]
@@ -111,16 +169,19 @@ class Transformer(lark.Transformer):
                 .value.strip()
                 .split("\n")
             ):
-                javascript.append(
+                script.append(
                     "'" + inner.strip() + "'",
                 )
-            javascript.append("'</script>'")
+            script.append("'</script>'")
 
-            return "+".join(javascript)
+            return Script("javascript", "+".join(script))
         elif script_type == "text/python":
-            return ""
+            for inner in list(children[1].find_data("script_content"))[0].children:
+                script.append(inner)
 
-        return children
+            return Script("python", "\n".join(script))
+
+        return Script()
 
     def dict_literal(self, children: List[Token | Tree[Token]]):
         if len(children) == 0:
@@ -141,15 +202,22 @@ class Transformer(lark.Transformer):
 
         return "[" + "".join(items) + "]"
 
+    def template_element(self, children: List[Token | Tree[Token]]):
+        return "+".join(children)
+
+    def template_block(self, children: List[Token | Tree[Token]]):
+        result = []
+        for child in children:
+            result.extend(child.children)
+
+        return "+".join(result)
+
     def component_body_call(self, children: List[Token | Tree[Token]]):
         body_content = []
         if len(children) > 0:
             body_elements = children[0].children  # body_content children
             for element in body_elements:
-                if hasattr(element, "children") and element.children:
-                    body_content.append(str(element.children[0]))
-                else:
-                    body_content.append(str(element))
+                body_content.extend(element.children)
 
         return "".join(body_content)
 
@@ -167,11 +235,15 @@ class Transformer(lark.Transformer):
 
         # Handle body call (slot content) - pass as last argument
         if len(children) > 2:  # Has component_body_call
-            slot_content = children[2].strip()  # The body content
+            slot_content = children[2]  # The body content
+            if slot_content.startswith("''"):
+                slot_content = slot_content[2:]
             component_args.append(f"lambda: {slot_content}")  # Pass as string to slot
 
         args_str = ", ".join(component_args)
-        return f"{component_name}({args_str})"
+        call = f"{component_name}({args_str})"
+
+        return call
 
     def component_def(self, children: List[Token | Tree[Token]]):
         output = ""
@@ -198,12 +270,15 @@ class Transformer(lark.Transformer):
         if len(component_body) > 0:
             component_body: Token | Tree[Token] = component_body[0]
 
-        for script in list(component_body.find_data("component_element"))[0].children:
-            if (
-                isinstance(script, str)
-                and script.find('<script type="text/javascript">') > 0
-            ):
-                javascript.append(script)
+        for blocks in list(component_body.find_data("component_element")):
+            for block in blocks.children:
+                if isinstance(block, Script):
+                    if block.type == "javascript":
+                        javascript.append(block.content)
+                    elif block.type == "python":
+                        python.append(block.content)
+                elif isinstance(block, str):
+                    markup.append(block)
 
         has_slot = component_body.pretty("").find("slot") >= 0
         if has_slot:

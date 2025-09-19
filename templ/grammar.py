@@ -37,7 +37,7 @@ script_content: /.+?(?=<\/script>)/s
 template_block: "<template>" template_content "</template>"
 template_content: template_element*
 
-template_element: component_call | html_element | interpolation | text_content
+template_element: control_flow | component_call | html_element | interpolation | text_content
 
 // HTML elements
 html_element: "<" tag_name attributes? ">" element_content "</" tag_name ">" | "<" tag_name attributes? "/>"
@@ -55,7 +55,7 @@ component_body_call: "{" body_content "}"
 
 // Body content for component calls
 body_content: body_element*
-body_element: if_statement | component_call | html_element | interpolation | body_text
+body_element: control_flow | component_call | html_element | interpolation | body_text
 
 // Python literals
 dict_literal: "{" dict_items* "}"
@@ -66,23 +66,26 @@ list_literal: "[" list_items? "]"
 list_items: list_item ("," list_item)*
 list_item: STRING | NUMBER | CNAME | interpolation
 
+control_flow: if_statement
+
 // If statements
 if_statement: if_clause elif_clause* else_clause?
-if_clause: "if" PYTHON_CONDITION ":" template_element*
-elif_clause: "elif" PYTHON_CONDITION ":" template_element*
-else_clause: "else" ":" template_element*
+if_clause: "if" PYTHON_CONDITION "{" body_element* "}"
+elif_clause: "elif" PYTHON_CONDITION "{" body_element* "}"
+else_clause: "else" "{" body_element* "}"
 
 // Interpolation expressions - using terminal for complete block
 interpolation: INTERPOLATION_BLOCK
 quoted_interpolation: QUOTED_INTERPOLATION
-python_expr: /[^}]+/
 
-// Text content - exclude keywords
-text_content: /(?!if\s|elif\s|else\s)[^<@{]+/
-body_text: /(?!if\s|elif\s|else\s)[^<@{}]+/
+// Text content
+text_content: TEXT_CONTENT
+body_text: BODY_TEXT
 
 // Terminals - with high priority
-PYTHON_CONDITION.8: /[^:]+/
+PYTHON_CONDITION.8: /(?:[^{()[\]"']|\([^)]*\)|\[[^\]]*\]|"[^"]*"|'[^']*')+(?=\s*\{)/
 QUOTED_INTERPOLATION.10: /"\{\{[^}]*\}\}"/
 INTERPOLATION_BLOCK.9: /\{\{[^}]*\}\}/
+TEXT_CONTENT.5: /(?!if\b|elif\b|else\b)[^<@{]+/
+BODY_TEXT.5: /(?!if\b|elif\b|else\b)[^<@{}]+/
 """
