@@ -1,0 +1,40 @@
+{
+  "name": "pytempl",
+  "displayName": "PyTemplate Engine",
+  "description": "Language Extention for PyTempl",
+  "version": "0.0.1",
+  "publisher": "MohammedAmeen",
+  "repository": {
+    "url": "https://github.com/nexios-labs/pytempl",
+    "directory": "/editor/vscode"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "pytempl",
+        "aliases": [
+          "PyTempl",
+          "pytempl"
+        ],
+        "extensions": [
+          ".pytempl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "pytempl",
+        "scopeName": "source.pytempl",
+        "path": "./syntaxes/pytempl.tmLanguage.json"
+      }
+    ]
+  }
+}
