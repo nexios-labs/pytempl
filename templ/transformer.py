@@ -227,7 +227,7 @@ class Transformer(lark.Transformer):
             for element in body_elements:
                 body_content.extend(element.children)
 
-        return "".join(body_content)
+        return "+".join(body_content)
 
     def component_call(self, children: List[Token | Tree[Token]]):
         component_name = children[0]
@@ -244,8 +244,11 @@ class Transformer(lark.Transformer):
         # Handle body call (slot content) - pass as last argument
         if len(children) > 2:  # Has component_body_call
             slot_content = children[2]  # The body content
+            if slot_content.startswith("''+"):
+                slot_content = slot_content[3:]
             if slot_content.startswith("''"):
                 slot_content = slot_content[2:]
+
             component_args.append(f"lambda: {slot_content}")  # Pass as string to slot
 
         args_str = ", ".join(component_args)

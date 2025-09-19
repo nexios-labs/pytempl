@@ -1,7 +1,7 @@
 import uvicorn
 from nexios import NexiosApp
 
-from sample import Counter
+from examples.demo import App
 
 # Create a new Nexios application
 app = NexiosApp()
@@ -10,7 +10,7 @@ app = NexiosApp()
 # Define a simple route
 @app.get("/")
 async def hello_world(request, response):
-    return response.html(Counter())
+    return response.html(App())
 
 
 # If you forget to use async def for your handler, Nexios will raise an error at startup.
