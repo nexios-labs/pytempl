@@ -10,9 +10,6 @@ hero:
     - theme: brand
       text: Get Started
       link: /getting-started
-    - theme: alt
-      text: View Examples
-      link: /examples
 
 features:
   - title: Component-Based Architecture
@@ -28,4 +25,3 @@ features:
   - title: Script Support
     details: Include both Python and JavaScript code in your templates for maximum flexibility
 ---
-

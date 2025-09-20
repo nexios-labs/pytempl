@@ -44,6 +44,7 @@ component App() {
 ## Key Features
 
 ### 1. Component Definition
+
 ```pytempl
 component ComponentName(props) {
   <template>
@@ -53,16 +54,19 @@ component ComponentName(props) {
 ```
 
 ### 2. Interpolation
+
 ```pytempl
 {{ python_expression }}
 ```
 
 ### 3. Component Usage
+
 ```pytempl
 @ComponentName({ "prop1": "value1", "prop2": "value2" })
 ```
 
 ### 4. Conditional Rendering
+
 ```pytempl
 if condition {
   <p>This shows when condition is true</p>
@@ -72,6 +76,7 @@ if condition {
 ```
 
 ### 5. Loops
+
 ```pytempl
 for item in items {
   <div>{{ item }}</div>
@@ -79,6 +84,7 @@ for item in items {
 ```
 
 ### 6. Scripts
+
 ```pytempl
 <script type="text/python">
   # Python code here
@@ -103,4 +109,4 @@ for item in items {
 
 ## Example Project
 
-Check out the [Examples](/examples) section to see a complete demo application showcasing all PyTemplate features.
+Check out the [Examples](https://github.com/nexios-labs/pytempl/tree/main/examples) section to see a complete demo application showcasing all PyTemplate features.
