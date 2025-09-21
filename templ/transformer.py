@@ -13,11 +13,33 @@ def $name($params):
 """
 )
 
+pyodide_template = Template(
+    """
+let pyodide;
+
+async function main(){
+    pyodide = await loadPyodide();
+    await pyodide.loadPackage("https://files.pythonhosted.org/packages/dd/3a/0e8db597f12cd77e61ebe915a3f9a6f83cff0501a3980dec5be049858a8a/reaktiv-0.19.2-py3-none-any.whl");
+
+    pyodide.runPython(`
+    $python_code
+    `);
+    }
+main();
+"""
+)
+
 
 @dataclass
 class Script:
     type: str
     content: str
+
+
+@dataclass
+class Attribute:
+    name: str
+    value: str
 
 
 class Transformer(lark.Transformer):
@@ -148,40 +170,88 @@ class Transformer(lark.Transformer):
 
         return "+".join(output)
 
-    def script_attrs(self, children: List[Token | Tree[Token]]):
-        attr_name = children[0].children[0].value
-        attr_value = list(children[0].children[1].find_data("script_value"))[
-            0
-        ].children[0]
+    def script_attr(self, children: List[Token | Tree[Token]]):
+        attr_name = children[0].value
+        attr_value = children[1].children[0].value
 
-        return f"{attr_name}={attr_value}"
+        return Attribute(attr_name, attr_value)
+
+    def script_attrs(self, children: List[Token | Tree[Token]]):
+        return children
 
     def script_block(self, children: List[Token | Tree[Token]]):
+        def get_attr(attrs: List[Attribute], name: str):
+            attr = list(filter(lambda v: v.name == name, attrs))
+            if not attr:
+                return ""
+            value = attr[0].value.strip('"')
+
+            return value
+
         script = []
-        script_type = children[0].split("=")[1].strip('"')
-
-        if script_type == "text/javascript":
-            script.append("'" + '<script type="text/javascript">' + "'")
-
-            for inner in (
-                list(children[1].find_data("script_content"))[0]
-                .children[0]
-                .value.strip()
-                .split("\n")
-            ):
-                script.append(
-                    "'" + inner.strip() + "'",
+        attrs: List[Attribute] = children[0]
+        script_type = get_attr(attrs, "type")
+        mode = get_attr(attrs, "mode")
+        if script_type == "text/python":
+            if mode == "client":
+                attrs = list(filter(lambda v: v.name != "mode", attrs))
+                attrs = list(
+                    map(
+                        lambda v: (
+                            Attribute(v.name, '"text/javascript"')
+                            if v.name == "type"
+                            else v
+                        ),
+                        attrs,
+                    )
                 )
-            script.append("'</script>'")
 
-            return Script("javascript", "+".join(script))
-        elif script_type == "text/python":
+                script.append(
+                    "'<script "
+                    + " ".join([f"{attr.name}={attr.value}" for attr in attrs])
+                    + ">'"
+                )
+
+                content = (
+                    list(children[1].find_data("script_content"))[0]
+                    .children[0]
+                    .value.split("\n")
+                )
+                script.append(
+                    "'''"
+                    + pyodide_template.substitute(
+                        python_code="\n".join(content),
+                    )
+                    + "'''"
+                )
+
+                script.append("'</script>'")
+
+                return Script("javascript", "".join(script))
             for inner in list(children[1].find_data("script_content"))[0].children:
                 script.append(inner)
 
             return Script("python", "\n".join(script))
+        else:
+            script.append(
+                "'<script "
+                + " ".join([f"{attr.name}={attr.value}" for attr in attrs])
+                + ">'"
+            )
 
-        return Script()
+            if len(children) > 1:
+                for inner in (
+                    list(children[1].find_data("script_content"))[0]
+                    .children[0]
+                    .value.strip()
+                    .split("\n")
+                ):
+                    script.append(
+                        "'" + inner.strip() + "'",
+                    )
+            script.append("'</script>'")
+
+            return Script("javascript", "+".join(script))
 
     def style_block(self, children: List[Token | Tree[Token]]):
         return '"""<style>' + children[0].children[0] + '</style>"""'
@@ -302,7 +372,7 @@ class Transformer(lark.Transformer):
             name=component_name,
             params=", ".join(params_name),
             python_code="\n".join(f"    {line}" for line in python),
-            markup=("+".join([*markup, *javascript])).strip(),
+            markup="+".join([*markup, *javascript]),
         )
 
         return output
