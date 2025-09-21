@@ -69,9 +69,56 @@ component Demo() {
     def get_message():
       return f"System has {count} items"
   </script>
-  
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.28.2/full/pyodide.js">
+    # BUG: does nothing, but removing this will make the python script below not to work
+    function() {}
+  </script>
+  <script type="text/python" mode="client">
+    import js
+    from reaktiv import Signal, Effect
+
+    js.alert("hello on the client")
+    print("hello from print")
+    div = js.document.createElement("div")
+    div.innerHTML = "<h1>This element was created from Python</h1>"
+    js.document.body.prepend(div)
+
+    count = Signal(0)
+
+    def count_effect():
+      js.document.getElementById("count").innerHTML = count()
+
+    # just to init
+    count_effect()
+    Effect(count_effect)
+
+    def decrease():
+      if count() > 0:
+        count.set(count() - 1)
+
+    def increase():
+      count.set(count() + 1)
+
+    def python_greet():
+      js.document.getElementById("output").innerHTML = "Direct Python greeting! ✨"
+    
+    js.window.python_greet = python_greet
+    js.window.increase = increase
+    js.window.decrease = decrease
+  </script>
+
   <template>
     <div class="demo-container">
+      <button onclick="python_greet()">Greet</button>
+      <p id="output">Before Python</p>
+
+      <div>
+        <button onclick="increase()">Increase</button>
+        <p id="count"></p>
+        <button onclick="decrease()">Decrease</button>
+      </div>
+
       <h1>Template Engine Demo</h1>
       
       <div class="section">
