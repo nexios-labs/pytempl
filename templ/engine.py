@@ -2,17 +2,14 @@ import ruff_api
 from lark import Lark, Token, Tree
 
 from templ.grammar import grammar
-from templ.transformer import Transformer
+from templ.transformer import Transformer, pyodide_template
 
 
 class Engine:
     def __init__(self):
         pass
 
-    def render(self, template_path: str, save: bool = True, format: bool = True) -> str:
-        with open(template_path, "r") as template_file:
-            content = template_file.read()
-
+    def server_render(self, content: str, format: bool = True):
         l = Lark(grammar, start="program")
         tree = l.parse(content)
 
@@ -27,11 +24,19 @@ class Engine:
         if format:
             output = ruff_api.format_string("", output)
 
-        if save:
-            file_name = template_path.replace(template_path.split(".")[-1], "py")
-            self.save(file_name, output)
+        return output
 
-            return
+    def client_render(self, **args: dict):
+        output = "".join(
+            [
+                args.get("component", ""),
+                args.get("markup", ""),
+                '<script type="text/javascript">',
+                pyodide_template.substitute(python_code=args.get("python_code")),
+                "</script >",
+            ]
+        )
+
         return output
 
     def save(self, file_name: str, content: str):

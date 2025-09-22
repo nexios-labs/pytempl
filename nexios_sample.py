@@ -1,10 +1,17 @@
 import uvicorn
 from nexios import NexiosApp
+from nexios.static import StaticFiles
 
-from examples.demo import App
+from examples.client import App
 
 # Create a new Nexios application
 app = NexiosApp()
+
+# Create a static files handler for a single directory
+static_files = StaticFiles(directory="dist")
+
+# Register the static files handler with a prefix
+app.register(static_files, prefix="/dist")
 
 
 # Define a simple route

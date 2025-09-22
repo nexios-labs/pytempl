@@ -18,8 +18,10 @@ import_list: import_item ("," import_item)*
 module_name: CNAME ("." CNAME)*
 import_item: CNAME
 
+component_directive: "@" CNAME "(" component_args? ")"
+
 // Component definitions
-component_def: "component" component_name "(" params? ")" "{" component_body "}"
+component_def: component_directive? "component" component_name "(" params? ")" "{" component_body "}"
 component_name: CNAME
 params: CNAME ("," CNAME)*
 component_body: component_element*

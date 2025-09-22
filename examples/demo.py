@@ -75,7 +75,7 @@ def Demo():
 
     return (
         ""
-        + '<div class="demo-container" >'
+        + '<div id="test" class="demo-container" >'
         + ""
         + '<button onclick="python_greet()" >'
         + "Greet"
@@ -352,6 +352,7 @@ async function main(){
 
     def count_effect():
       js.document.getElementById("count").innerHTML = count()
+      print(js.document.getElementById("test").toJs())
 
     # just to init
     count_effect()

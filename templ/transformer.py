@@ -5,11 +5,20 @@ from typing import List
 import lark
 from lark import Token, Tree
 
-function_template = Template(
+server_component_template = Template(
     """
 def $name($params):
     $python_code
     return ( $markup )
+"""
+)
+
+client_component_template = Template(
+    """
+from templ import Engine
+
+def $name($params):
+    return Engine().client_render(**{"component": "$name", "python_code": '''$python_code''', "markup": $markup})
 """
 )
 
@@ -20,6 +29,7 @@ let pyodide;
 async function main(){
     pyodide = await loadPyodide();
     await pyodide.loadPackage("https://files.pythonhosted.org/packages/dd/3a/0e8db597f12cd77e61ebe915a3f9a6f83cff0501a3980dec5be049858a8a/reaktiv-0.19.2-py3-none-any.whl");
+    await pyodide.loadPackage("/dist/pytempl-0.1.0-py3-none-any.whl");
 
     pyodide.runPython(`
     $python_code
@@ -323,16 +333,35 @@ class Transformer(lark.Transformer):
 
     def component_def(self, children: List[Token | Tree[Token]]):
         output = ""
+        mode = "server"
+        directives = list(children[0].find_data("component_directive"))
+        if directives:
+            mode = (
+                list(directives[0].find_data("component_args"))[0]
+                .children[-1]
+                .children[0]
+                .strip('"')
+            )
+            component_name = (
+                list(
+                    list(children[1].find_data("component_name"))[0].find_pred(
+                        lambda v: isinstance(v, Tree)
+                    )
+                )[0]
+                .children[0]
+                .value
+            )
+        else:
+            component_name = (
+                list(
+                    list(children[0].find_data("component_name"))[0].find_pred(
+                        lambda v: isinstance(v, Tree)
+                    )
+                )[0]
+                .children[0]
+                .value
+            )
 
-        component_name = (
-            list(
-                list(children[0].find_data("component_name"))[0].find_pred(
-                    lambda v: isinstance(v, Tree)
-                )
-            )[0]
-            .children[0]
-            .value
-        )
         params = list(filter(lambda v: v.data == "params", children))
         params_name = []
         if len(params) > 0:
@@ -368,11 +397,15 @@ class Transformer(lark.Transformer):
             elif isinstance(targets, str):
                 markup.append(targets)
 
-        output += function_template.substitute(
-            name=component_name,
-            params=", ".join(params_name),
-            python_code="\n".join(f"    {line}" for line in python),
-            markup="+".join([*markup, *javascript]),
-        )
+        args = {
+            "name": component_name,
+            "params": " ".join(params_name),
+            "python_code": "\n".join(f"    {line}" for line in python),
+            "markup": "+".join([*markup, *javascript]),
+        }
+        if mode == "client":
+            output += client_component_template.substitute(**args)
+        else:
+            output += server_component_template.substitute(**args)
 
         return output
