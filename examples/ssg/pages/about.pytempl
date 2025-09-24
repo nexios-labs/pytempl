@@ -1,4 +1,4 @@
-from examples.blog.layout import Layout
+from examples.ssg.layout import Layout
 
 component Page() {
   <template>

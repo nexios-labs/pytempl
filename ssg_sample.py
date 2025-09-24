@@ -5,7 +5,7 @@ def main():
     engine = Engine()
     engine.render("./examples/demo.pytempl", format=True)
     engine.render("./examples/sample.pytempl", format=True)
-    engine.ssg("./examples/blog")
+    engine.ssg("./examples/ssg")
 
 
 if __name__ == "__main__":
