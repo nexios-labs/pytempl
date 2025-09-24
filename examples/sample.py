@@ -89,7 +89,7 @@ def Counter():
             )
         )
         + ""
-        + Button({"onclick": "do_something()"})
+        + Button({"onclick": "do_something()"}, lambda: {"onclick": "do_something()"})
         + ""
         + "<br/>"
         + "".join(

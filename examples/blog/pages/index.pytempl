@@ -1,0 +1,11 @@
+from examples.blog.layout import Layout
+
+component Page() {
+  <template>
+    @Layout() {
+      <p>this is the home page</p>
+      <p>this is the home page</p>
+      <p>this is the home page</p>
+    }
+  </template>
+}

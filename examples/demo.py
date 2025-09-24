@@ -226,7 +226,12 @@ def Demo():
                         "text": todo["text"],
                         "done": todo["done"],
                         "priority": todo["priority"],
-                    }
+                    },
+                    lambda: {
+                        "text": todo["text"],
+                        "done": todo["done"],
+                        "priority": todo["priority"],
+                    },
                 )
                 for todo in todos
             ]

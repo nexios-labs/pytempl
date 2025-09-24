@@ -1,0 +1,9 @@
+from examples.blog.layout import Layout
+
+component Page() {
+  <template>
+    @Layout() {
+      <p>this is the about page</p>
+    }
+  </template>
+}
