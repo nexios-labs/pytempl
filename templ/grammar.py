@@ -57,7 +57,7 @@ attribute_value: quoted_interpolation | INTERPOLATION_BLOCK | STRING | CNAME
 element_content: template_element*
 
 // Component calls
-component_call: "@" CNAME "(" component_args? ")" component_body_call?
+component_call: "@" component_name "(" component_args? ")" component_body_call?
 component_args: component_arg ("," component_arg)*
 component_arg: dict_literal | list_literal | interpolation | STRING | NUMBER | CNAME
 component_body_call: "{" body_content "}"
