@@ -47,7 +47,7 @@ class Transformer(lark.Transformer):
         return f"import {children[0].children[0].children[0]}"
 
     def from_import(self, children: List[Token | Tree[Token]]):
-        module_name = list(children[0].find_data("module_name"))[0].children[0]
+        module_name = ".".join(list(children[0].find_data("module_name"))[0].children)
         import_list = list(children[1].find_data("import_list"))[0].children[0].children
 
         return f"from {module_name} import {','.join(import_list)}"
@@ -290,12 +290,15 @@ class Transformer(lark.Transformer):
         if len(children) > 0:
             body_elements = children[0].children  # body_content children
             for element in body_elements:
-                body_content.extend(element.children)
+                element: str = element.children[0]
+                if len(element.strip("'")) == 0:
+                    continue
+                body_content.append(element)
 
         return "+".join(body_content)
 
     def component_call(self, children: List[Token | Tree[Token]]):
-        component_name = children[0]
+        component_name = children[0].children[0]
         component_args = []
 
         # Handle regular arguments
@@ -307,8 +310,10 @@ class Transformer(lark.Transformer):
                     component_args.append(str(arg))
 
         # Handle body call (slot content) - pass as last argument
-        if len(children) > 2:  # Has component_body_call
-            slot_content = children[2]  # The body content
+        if len(children) >= 2:  # Has component_body_call
+            slot_content = children[-1]
+            if isinstance(slot_content, Tree):
+                slot_content = "".join(slot_content.children[0].children)
             if slot_content.startswith("''+"):
                 slot_content = slot_content[3:]
             if slot_content.startswith("''"):
