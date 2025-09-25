@@ -35,5 +35,5 @@ class CSRComponent:
             name=self.name,
             python_code=self.content,
             interpreter=self.interpreter,
-            packages=repr(self.packages),
+            packages=self.packages,
         )
