@@ -1,0 +1,29 @@
+@mode("csr")
+component Demo() {
+  <script type="text/python">
+    print("hello")
+  </script>
+
+  <template>
+    <p>Hello, World</p>
+  </template>
+}
+
+@mode("csr", "py")
+component AnotherDemo() {
+  <script type="text/python">
+    print("hello 2")
+  </script>
+
+  <template>
+    <p>Hello, 2</p>
+  </template>
+}
+
+component App() {
+  <template>
+    <p>Some contents are being rendered from by pyodide, slow thing, please wait</p>
+    @Demo()
+    @AnotherDemo()
+  </template>
+}
