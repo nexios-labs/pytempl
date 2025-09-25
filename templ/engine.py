@@ -1,34 +1,34 @@
 import importlib
 import os
+from typing import List
 
+import python_minifier
 import ruff_api
-from lark import Lark, Token, Tree
+from lark import Lark
 
 from templ.grammar import grammar
 from templ.transformer import Transformer
 
 
 class Engine:
-    def __init__(self):
-        pass
+    def __init__(self, csr_packages: List[str] = []):
+        self.csr_packages = csr_packages
 
-    def render(self, template_path: str, save: bool = True, format: bool = True) -> str:
+    def render(
+        self, template_path: str, save: bool = True, format: bool = True, minify=True
+    ) -> str:
         with open(template_path, "r") as template_file:
             content = template_file.read()
 
-        l = Lark(grammar, start="program")
+        l = Lark(grammar, start="program", propagate_positions=True)
         tree = l.parse(content)
 
-        output = []
-        transformed: Tree[Token] = Transformer().transform(tree)
-        for i in transformed.children:
-            if i is None:
-                continue
-            output.append(i)
-
-        output = "\n".join(output).strip()
+        output: str = Transformer(csr_packages=self.csr_packages).transform(tree)
         if format:
-            output = ruff_api.format_string("", output)
+            output = ruff_api.format_string("", output.strip())
+
+        if minify:
+            output = python_minifier.minify(output)
 
         if save:
             file_name = template_path.replace(template_path.split(".")[-1], "py")

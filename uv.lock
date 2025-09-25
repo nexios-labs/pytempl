@@ -183,6 +183,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "lark" },
+    { name = "python-minifier" },
     { name = "ruff-api" },
 ]
 
@@ -194,11 +195,21 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "lark", specifier = ">=1.2.2" },
+    { name = "python-minifier", specifier = ">=3.0.0" },
     { name = "ruff-api", specifier = ">=0.1.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [{ name = "nexios", specifier = ">=2.11.3" }]
+
+[[package]]
+name = "python-minifier"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/3d/ca/6e16622e3730c55a0f25df37e03360e3f35263fc018569bd3e151bcdd3ac/python_minifier-3.0.0.tar.gz", hash = "sha256:5d892a20a8c56a34176fa8bfff007afc2aa4999abc81fa1c3507fb0b1a9790da", size = 69082, upload-time = "2025-08-13T15:40:18.587Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/de/00a567ad50de5eebfe658acb93d4267138571bf40248c67a372949e185a5/python_minifier-3.0.0-py3-none-any.whl", hash = "sha256:a1f6806d3865c35a1297e89c1584c04387926ad1853c86681b1cc734f269fa0d", size = 57100, upload-time = "2025-08-13T15:40:17.011Z" },
+]
 
 [[package]]
 name = "python-multipart"

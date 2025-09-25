@@ -1,9 +1,13 @@
+import secrets
 from dataclasses import dataclass
 from string import Template
 from typing import List
 
 import lark
 from lark import Token, Tree
+
+from templ.ast.components import ComponentDirective
+from templ.ast.csr import CSRComponent
 
 function_template = Template(
     """
@@ -43,6 +47,9 @@ class Attribute:
 
 
 class Transformer(lark.Transformer):
+    def __init__(self, csr_packages: List[str] = []):
+        self.csr_packages = csr_packages
+
     def simple_import(self, children: List[Token | Tree[Token]]):
         return f"import {children[0].children[0].children[0]}"
 
@@ -159,7 +166,7 @@ class Transformer(lark.Transformer):
         opening_tag.append(f"'<{tag_name}")
         if has_attributes:
             opening_tag.append(attrs_str)
-        opening_tag.append(" >'")
+        opening_tag.append(">'")
         output.append("".join(opening_tag).strip())
 
         for content in element_content_nodes[0].children:
@@ -326,8 +333,31 @@ class Transformer(lark.Transformer):
 
         return call
 
+    def component_directive(self, children: List[Token | Tree[Token]]):
+        return ComponentDirective(
+            name=children[0],
+            value=children[1],
+        )
+
+    def component_directive_name(self, children: List[Token | Tree[Token]]):
+        return children[0].value
+
+    def component_directive_value(self, children: List[Token | Tree[Token]]):
+        value = []
+        component_arg = list(children[0].find_data("component_arg"))
+
+        for arg in component_arg:
+            value.extend([str(child) for child in arg.children])
+
+        return value
+
     def component_def(self, children: List[Token | Tree[Token]]):
         output = ""
+
+        directives: List[ComponentDirective] = list(
+            filter(lambda v: isinstance(v, ComponentDirective), children)
+        )
+        children = children[len(directives) :]
 
         component_name = (
             list(
@@ -380,4 +410,27 @@ class Transformer(lark.Transformer):
             markup="+".join([*markup, *javascript]),
         )
 
+        is_csr = False
+        interpreter = "mpy"
+        mode = list(filter(lambda v: v.name == "mode", directives))
+        if mode:
+            is_csr = mode[0].value[0].strip('"')
+            if len(mode[0].value) > 1:
+                interpreter = mode[0].value[1].strip('"')
+
+        if is_csr:
+            return CSRComponent(
+                id=f"{component_name}-{secrets.token_hex(10)}",
+                name=component_name,
+                content=output,
+                interpreter=interpreter,
+                packages=self.csr_packages,
+            )
+
         return output
+
+    def program(self, children: List[Token | Tree[Token]]):
+        for idx, child in enumerate(children):
+            if isinstance(child, CSRComponent):
+                children[idx] = child.render()
+        return "\n".join(children)
