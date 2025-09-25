@@ -2,7 +2,7 @@
   "name": "pytempl",
   "displayName": "PyTemplate Engine",
   "description": "Language Extention for PyTempl",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "MohammedAmeen",
   "repository": {
     "url": "https://github.com/nexios-labs/pytempl",
