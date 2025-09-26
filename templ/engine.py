@@ -50,6 +50,11 @@ class Engine:
                 if full_path.endswith(".pytempl"):
                     yield full_path
 
+    def ssr(self, template_dir: str):
+        templates = list(self._scan_directory(template_dir))
+        for template in templates:
+            self.render(template, True, True)
+
     def ssg(self, template_dir: str):
         templates = list(self._scan_directory(template_dir))
         for template in templates:
